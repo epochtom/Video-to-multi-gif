@@ -1,0 +1,15 @@
+data/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+*.zip
+*.MP4
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.avi
+*.m4v
+!app/static/demo.mp4

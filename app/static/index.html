@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chop — video to GIF / clips</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%230e0d0b' width='32' height='32' rx='6'/%3E%3Cpath fill='%23e85d2a' d='M6 10h20v2H6zm0 10h20v2H6z'/%3E%3Crect fill='%23f3eadc' x='14' y='6' width='4' height='20' rx='1'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="top">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <div>
+        <strong>CHOP</strong>
+        <span>Cut a video into GIFs or shorter clips</span>
+      </div>
+    </div>
+    <div class="top-meta" id="topMeta"></div>
+  </header>
+
+  <main>
+    <section class="stage" id="welcome">
+      <div class="drop" id="dropzone">
+        <label class="drop-inner" for="fileInput">
+          <input id="fileInput" type="file" accept="video/*" hidden />
+          <p class="eyebrow">Drop a video</p>
+          <h1>Upload, mark cuts, export many clips.</h1>
+          <p>MP4, MOV, MKV, WebM. Then split evenly, slice by seconds, or set in/out points by hand.</p>
+          <span class="btn">Choose video</span>
+        </label>
+        <button type="button" class="ghost demo-link" id="demoBtn">Or try a 3-second demo</button>
+      </div>
+    </section>
+
+    <section class="editor hidden" id="editor">
+      <div class="player-col">
+        <div class="screen">
+          <video id="player" playsinline></video>
+        </div>
+        <div class="transport">
+          <button type="button" id="playBtn" class="icon-btn" title="Play / pause">Play</button>
+          <span class="time" id="clock">0:00.0 / 0:00.0</span>
+          <button type="button" id="inBtn">Mark in</button>
+          <button type="button" id="outBtn">Mark out</button>
+          <button type="button" id="addBtn" class="primary">Add clip</button>
+        </div>
+        <div class="timeline-wrap">
+          <div class="timeline" id="timeline" role="slider" aria-label="Timeline">
+            <div class="ticks" id="ticks"></div>
+            <div class="track" id="track">
+              <div class="clip-bars" id="clipBars"></div>
+              <div class="range" id="range"></div>
+              <div class="playhead" id="playhead"></div>
+            </div>
+          </div>
+          <p class="hint">Click to seek. Drag to set in/out. Keys: I in, O out, Enter add, Space play.</p>
+        </div>
+      </div>
+
+      <aside class="side">
+        <section class="panel">
+          <h2>Output</h2>
+          <div class="seg" role="group" aria-label="Format">
+            <button type="button" class="seg-btn on" data-format="gif">GIF</button>
+            <button type="button" class="seg-btn" data-format="mp4">Video (MP4)</button>
+          </div>
+          <label class="field">
+            Width
+            <input id="widthInput" type="range" min="160" max="1280" step="16" value="480" />
+            <span id="widthLabel">480 px</span>
+          </label>
+          <label class="field">
+            Frame rate
+            <input id="fpsInput" type="range" min="6" max="24" step="1" value="12" />
+            <span id="fpsLabel">12 fps</span>
+          </label>
+        </section>
+
+        <section class="panel">
+          <h2>Auto chop</h2>
+          <div class="row">
+            <label class="mini">
+              Equal parts
+              <input id="partsInput" type="number" min="2" max="40" value="4" />
+            </label>
+            <button type="button" id="splitBtn">Split</button>
+          </div>
+          <div class="row">
+            <label class="mini">
+              Every (sec)
+              <input id="sliceInput" type="number" min="0.5" max="60" step="0.5" value="2" />
+            </label>
+            <button type="button" id="sliceBtn">Slice</button>
+          </div>
+        </section>
+
+        <section class="panel clips-panel">
+          <div class="panel-head">
+            <h2>Clips <span id="clipCount">0</span></h2>
+            <button type="button" class="ghost" id="clearBtn">Clear</button>
+          </div>
+          <ul class="clip-list" id="clipList"></ul>
+          <button type="button" class="export" id="exportBtn" disabled>Export clips</button>
+          <p class="status" id="status"></p>
+        </section>
+      </aside>
+    </section>
+
+    <section class="results hidden" id="results">
+      <div class="results-head">
+        <h2>Exports</h2>
+        <a class="btn" id="zipLink" href="#" download>Download all (.zip)</a>
+      </div>
+      <div class="grid" id="resultGrid"></div>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
