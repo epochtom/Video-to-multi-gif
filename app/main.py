@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from .convert import export_clip, probe, safe_stem
+from .convert import export_clip, extract_last_frame, probe, safe_stem
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
@@ -202,6 +202,13 @@ def _run_job(job_id: str, src: str, clips: list[dict], width: int, fps: int) -> 
                 width,
                 fps,
             )
+            frame_dest = dest.with_name(f"{dest.stem}-last.png")
+            info["last_frame"] = extract_last_frame(
+                Path(src),
+                frame_dest,
+                clip["end"],
+                width,
+            )
             files.append(info)
             with lock:
                 jobs[job_id]["files"] = list(files)
@@ -211,6 +218,10 @@ def _run_job(job_id: str, src: str, clips: list[dict], width: int, fps: int) -> 
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as archive:
             for item in files:
                 archive.write(out_dir / item["filename"], item["filename"])
+                frame = item.get("last_frame") or {}
+                frame_name = frame.get("filename")
+                if frame_name:
+                    archive.write(out_dir / frame_name, frame_name)
 
         with lock:
             jobs[job_id]["zip_path"] = str(zip_path)

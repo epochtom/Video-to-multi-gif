@@ -129,3 +129,35 @@ def export_clip(
         "duration": round(duration, 3),
         "bytes": size,
     }
+
+
+def extract_last_frame(src: Path, dst: Path, end: float, width: int) -> dict:
+    scale = f"scale='min({width},iw)':-1:flags=lanczos"
+    seeks = [max(0.0, end - 0.001), max(0.0, end - 0.04), max(0.0, end - 0.12)]
+    last_error: Exception | None = None
+    for seek in seeks:
+        try:
+            run(
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-ss",
+                    f"{seek:.3f}",
+                    "-i",
+                    str(src),
+                    "-frames:v",
+                    "1",
+                    "-vf",
+                    scale,
+                    str(dst),
+                ]
+            )
+            if dst.exists() and dst.stat().st_size > 0:
+                return {
+                    "filename": dst.name,
+                    "format": "png",
+                    "bytes": dst.stat().st_size,
+                }
+        except RuntimeError as exc:
+            last_error = exc
+    raise last_error or RuntimeError("Could not extract last frame.")

@@ -410,7 +410,10 @@ async function pollJob(jobId) {
     setStatus(`Exporting ${job.progress} / ${job.total}`);
     if (job.status === "done") {
       showResults(jobId, job.files);
-      setStatus(`Done. ${job.files.length} file${job.files.length === 1 ? "" : "s"} exported.`);
+      const extra = job.files.filter((file) => file.last_frame).length;
+      setStatus(
+        `Done. ${job.files.length} clip${job.files.length === 1 ? "" : "s"} and ${extra} last frame${extra === 1 ? "" : "s"} exported.`
+      );
       els.exportBtn.disabled = state.clips.length === 0;
       return;
     }
@@ -434,7 +437,14 @@ function showResults(jobId, files) {
         file.format === "gif"
           ? `<img src="${url}" alt="${file.filename}" />`
           : `<video src="${url}" muted loop playsinline controls></video>`;
-      return `<article class="card">${media}<div class="meta"><span>${file.filename}<br>${bytes(file.bytes)}</span><a href="${url}" download>Download</a></div></article>`;
+      const frame = file.last_frame;
+      const frameUrl = frame
+        ? `/api/jobs/${jobId}/files/${encodeURIComponent(frame.filename)}`
+        : "";
+      const frameBlock = frame
+        ? `<div class="shot"><span class="tag">Last frame</span><img src="${frameUrl}" alt="${frame.filename}" /><div class="meta"><span>${frame.filename}<br>${bytes(frame.bytes)}</span><a href="${frameUrl}" download>Download</a></div></div>`
+        : "";
+      return `<article class="card"><div class="pair"><div class="shot"><span class="tag">Clip</span>${media}<div class="meta"><span>${file.filename}<br>${bytes(file.bytes)}</span><a href="${url}" download>Download</a></div></div>${frameBlock}</div></article>`;
     })
     .join("");
   els.results.scrollIntoView({ behavior: "smooth", block: "start" });
